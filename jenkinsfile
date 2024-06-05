@@ -1,0 +1,60 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout code from GitHub repository
+                git 'https://github.com/yourusername/yourrepository.git'
+            }
+        }
+        
+        stage('Install Dependencies') {
+            steps {
+                // Install dependencies (assuming npm is used)
+                sh 'npm install'
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                // Build Docker image
+                script {
+                    docker.build('yourusername/yourimage:latest')
+                }
+            }
+        }
+        
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                // Push Docker image to Docker Hub
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+                        docker.image('yourusername/yourimage:latest').push('latest')
+                    }
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                // Deploy containers using Docker Compose
+                sh 'docker-compose up -d'
+            }
+        }
+        
+        stage('Functional Testing') {
+            steps {
+                // Run functional tests to validate application
+                // You can use tools like Selenium, Postman, etc.
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Clean up resources
+            sh 'docker-compose down'
+        }
+    }
+}
